@@ -1,0 +1,873 @@
+openapi: 3.0.0
+info:
+  title: UAT Service
+  description: >-
+    * * *
+
+
+    **Team:**
+    [foundation-productivity-eng@narvar.com](mailto:foundation-productivity-eng@narvar.com)  
+
+    **Tags:** `internal` `productivity`  
+
+    **Version:** `1.0.0`
+
+
+    * * *
+
+
+    **UAT Service** provides the endpoints to carry out the user acceptance
+    tests. The user acceptance tests are normally run in one of the following
+    scenarios:
+
+
+    1\. When a new Retailer (Customer) is onboarded.  
+
+    2\. When a new feature or change is added to an existing Retailer.  
+
+    3\. For onboarding a retailer to the Returns Platform.
+
+
+    In general these tests are used to confirm if the integration between the
+    Narvar and Retailer is working as expected. In practice these tests are run
+    by the customer facing teams (professional services team, customer support
+    teams and customer success teams). In practice as these tests are run
+    manually and may not cover all the scenarios due to human error. The
+    endpoints provided by the UAT service at the time of this documentation
+    provide UAT capability for two products namely:
+
+
+    1.  **Returns and**
+
+    2.  **Messaging**
+        
+
+    (The support exists for all the three environments - QA01, Staging and
+    Production)
+
+
+    * * *
+
+
+    **Tool Integration:**
+
+
+    **Hub:** These endpoints are now integrated to hub. The customer facing
+    teams can now trigger the UAT tests for messaging from the hub itself. The
+    same tests can be triggered by the retailer as well in the long run.
+
+
+    **Retool**: The Retailer Onboarding to the Returns Platform is integrated
+    with the Retool on all the three platforms namely qa01, staging and
+    production. As retool is internal and as tenant creation should be allowed
+    for only the internal customers, this integration exists in place.)
+
+
+    * * *
+
+
+    **Referencese**:
+
+
+    **Run Book to trigger the messaging UAT tests is available at the link
+    here:**
+    [https://narvar.atlassian.net/wiki/spaces/TESTENG/pages/1520370104/User+Acceptance+Testing+UAT+for+Messaging+-+Runbook](https://narvar.atlassian.net/wiki/spaces/TESTENG/pages/1520370104/User+Acceptance+Testing+UAT+for+Messaging+-+Runbook)
+
+
+    **High level Hub integration details can be found here:**
+    [https://narvar.atlassian.net/wiki/spaces/CG/pages/2089222494/Messaging+retailer+UAT+Backend+changes](https://narvar.atlassian.net/wiki/spaces/CG/pages/2089222494/Messaging+retailer+UAT+Backend+changes)
+
+
+    **Returns UAT API documentation can be found here:**
+    [https://narvar.atlassian.net/wiki/spaces/TESTENG/pages/2176909389/Returns+UAT+Service+-+API+doc](https://narvar.atlassian.net/wiki/spaces/TESTENG/pages/2176909389/Returns+UAT+Service+-+API+doc)
+
+
+    **Documentation for retool pages for Retailer onboarding to Returns Platform
+    can be found here:**
+    [https://narvar.atlassian.net/wiki/spaces/TESTENG/pages/2172813471](https://narvar.atlassian.net/wiki/spaces/TESTENG/pages/2172813471)
+  version: 1.0.0
+servers:
+  - url: >-
+      undefined://internal-d471ad54-qa01-uatprodsanit-41f0-792218674.us-west-2.elb.amazonaws.com
+  - url: >-
+      undefined://internal-64950444-st01-uatprodsanit-e1ea-1956799236.us-west-2.elb.amazonaws.com
+  - url: >-
+      undefined://internal-acf47a1a-prod01-uatprodsan-fc3d-1403196620.us-west-2.elb.amazonaws.com
+  - url: http://localhost:8080
+tags:
+  - name: Quick Start Guide
+    description: >-
+      This section describes two areas, one for triggering the UAT tests for
+      messaging and one for onboarding the retailer to the Returns Platform.
+      Once hub integration of the Returns UAT tests is done, we will add a
+      section for UAT on returns here.
+
+
+      ## UAT Tests for Messaging:
+
+
+      Before triggering the UAT tests for any given retailer, you should be
+      aware of the following details:
+
+
+      | **Fields** | **Example Values** |
+
+      | --- | --- |
+
+      | Retailer Name | Example: peninsula |
+
+      | Carrier Monicker | ups |
+
+      | Triggers | Example: All or Selected triggers (delivered_standard)  <br> 
+      <br>Expects an array of triggers to be provided |
+
+      | Channels to be tested | sms, email etc (expects an array of values) |
+
+      | Locales to be tested | "en_US" (expects an array of locales) |
+
+
+      This is how the UAT tests are triggered:
+
+
+      1.  Trigger the **POST** Request `(endpoint:
+      api/v1/notifyauto/uat/retailer/)` for running the UAT tests against the
+      Retailer of your choice. Construct the body of the post request with the
+      details listed in the table above. The response to this request will
+      return an **`execution id`**. Behind the scene, this API will generate the
+      test cases based on the retailer configuration and the test parameters
+      (locales, triggers, channels) and runs them on the environment chosen.
+
+      2.  Use the **GET** request to query the status of the test by querying on
+      the **`execution id.`** The response to this request says if the test is
+      completed or is in progress. The completion of the tests depends on how
+      many tests are run.
+          
+
+      ## Retailer Onboarding To Returns Platform:
+
+
+      The POST endpoint `{/api/v1/returns/onboardretailer}` to onboard the
+      retailer to the hub with all of its Track configurations. The post payload
+      includes both mandatory and optional parameters. The retailer monicker in
+      the payload is used to create the Retailer in Hub based on the environment
+      selected (one of QA01, Staging or Production).
+
+
+      # **IMPORTANT NOTE:**
+
+
+      If the **retailer already exists**, his configuration will be
+      **overwritten with the new configurations** we are creating.
+  - name: QA01
+    description: >-
+      All the endpoints in this collection are segregated as per the
+      environment. This section describes all the endpoints that can be tried on
+      a QA01 environment.
+  - name: Staging
+    description: >-
+      All the endpoints in this collection are segregated as per the
+      environment. This section describes all the endpoints that can be tried on
+      a Staging environment.
+  - name: Prod
+    description: >-
+      All the endpoints in this collection are segregated as per the
+      environment. This section describes all the endpoints that can be tried on
+      a PROD environment. The direct usage of these endpoints is discouraged.
+  - name: LocalAndInternal
+paths:
+  /api/v1/notifyauto/uat/retailer/crocs:
+    post:
+      tags:
+        - Staging
+      summary: Run Messaging UAT for Specific Triggers - ST01
+      description: "This endpoint helps trigger the User Acceptance Test for Messaging based on input such as triggers, locales, channels, for a given retailer (for specific triggers provided). The response includes an\_`execution_id`\_which can be queried by the get endpoints to know the status of the User Acceptance Tests."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                retailer_name: crocs
+                carrier_moniker: ups
+                triggers:
+                  - shipment_confirmation_standard
+                channels:
+                  - email
+                locales:
+                  - en_US
+                channel_contacts:
+                  - channel: email
+                    contact: rajesh.kannan@narvar.com
+                    optin_level: ''
+                  - channel: sms
+                    contact: '+919880011322'
+                    optin_level: order
+                  - channel: whatsapp
+                    contact: '+919880011322'
+                    optin_level: customer
+      responses:
+        '200':
+          description: OK
+          headers:
+            Date:
+              schema:
+                type: string
+                example: Wed, 16 Feb 2022 12:49:01 GMT
+            Content-Type:
+              schema:
+                type: string
+                example: application/json;charset=UTF-8
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |-
+                {
+                    "executionId": "uat851645002829615",
+                    "status": "2001",
+                    "message": "SUCCESS",
+                    "error": ""
+                }
+        '404':
+          description: Not Found
+          headers:
+            Date:
+              schema:
+                type: string
+                example: Wed, 16 Feb 2022 09:16:27 GMT
+            Content-Type:
+              schema:
+                type: string
+                example: application/json;charset=UTF-8
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |-
+                {
+                    "timestamp": "2022-02-16T09:16:27.402+0000",
+                    "status": 404,
+                    "error": "Not Found",
+                    "message": "No message available",
+                    "path": "/api/v1/notifyauto1/uat/retailer/crocs"
+                }
+    get:
+      tags:
+        - Staging
+      summary: Get Messaging UAT Execution Result - ST01
+      description: >-
+        Using this request, by passing the `execution_id` as the parameter, you
+        can obtain the status of the UAT tests. The response tells us if the
+        test is in progress or completed. The completed tests will provide a
+        very detailed response as which tests succeeded, which tests failed, the
+        reason for failure etc.
+      parameters:
+        - name: execution_id
+          in: query
+          schema:
+            type: string
+          example: uat7231638852307339
+      responses:
+        '200':
+          description: OK
+          headers:
+            Date:
+              schema:
+                type: string
+                example: Wed, 16 Feb 2022 12:49:01 GMT
+            Content-Type:
+              schema:
+                type: string
+                example: application/json;charset=UTF-8
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |-
+                {
+                    "executionId": "uat851645002829615",
+                    "status": "2001",
+                    "message": "SUCCESS",
+                    "error": ""
+                }
+        '404':
+          description: Not Found
+          headers:
+            Date:
+              schema:
+                type: string
+                example: Wed, 16 Feb 2022 09:16:27 GMT
+            Content-Type:
+              schema:
+                type: string
+                example: application/json;charset=UTF-8
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |-
+                {
+                    "timestamp": "2022-02-16T09:16:27.402+0000",
+                    "status": 404,
+                    "error": "Not Found",
+                    "message": "No message available",
+                    "path": "/api/v1/notifyauto1/uat/retailer/crocs"
+                }
+  /api/v1/notifyauto/uat/retailer/messagingtest1:
+    post:
+      tags:
+        - LocalAndInternal
+      summary: Run Messaging UAT for All Triggers - Local
+      description: "This endpoint helps trigger the User Acceptance Test for Messaging for all triggers and based on input such as locales and channels, for a given retailer. The response includes an\_`execution_id`\_which can be queried by the get endpoints to know the status of the User Acceptance Tests."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                carrier_moniker: ups
+                triggers:
+                  - All
+                channel_contacts:
+                  - channel: email
+                    contact: rajesh.kannan@narvar.com
+                    optin_level: ''
+                  - channel: sms
+                    contact: '+919880011322'
+                    optin_level: order
+                  - channel: whatsapp
+                    contact: '+919880011322'
+                    optin_level: customer
+      responses:
+        '200':
+          description: OK
+          headers:
+            Date:
+              schema:
+                type: string
+                example: Wed, 16 Feb 2022 12:49:01 GMT
+            Content-Type:
+              schema:
+                type: string
+                example: application/json;charset=UTF-8
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |-
+                {
+                    "executionId": "uat851645002829615",
+                    "status": "2001",
+                    "message": "SUCCESS",
+                    "error": ""
+                }
+        '404':
+          description: Not Found
+          headers:
+            Date:
+              schema:
+                type: string
+                example: Wed, 16 Feb 2022 09:16:27 GMT
+            Content-Type:
+              schema:
+                type: string
+                example: application/json;charset=UTF-8
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |-
+                {
+                    "timestamp": "2022-02-16T09:16:27.402+0000",
+                    "status": 404,
+                    "error": "Not Found",
+                    "message": "No message available",
+                    "path": "/api/v1/notifyauto1/uat/retailer/crocs"
+                }
+    get:
+      tags:
+        - LocalAndInternal
+      summary: Get Messaging UAT Execution Result - Local
+      description: >-
+        Using this request, by passing the `execution_id` as the parameter, you
+        can obtain the status of the UAT tests. The response tells us if the
+        test is in progress or completed. The completed tests will provide a
+        very detailed response as which tests succeeded, which tests failed, the
+        reason for failure etc.
+      parameters:
+        - name: execution_id
+          in: query
+          schema:
+            type: string
+          example: uat5411639389319101
+      responses:
+        '200':
+          description: OK
+          headers:
+            Date:
+              schema:
+                type: string
+                example: Wed, 16 Feb 2022 12:49:01 GMT
+            Content-Type:
+              schema:
+                type: string
+                example: application/json;charset=UTF-8
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                example-0:
+                  summary: Successful Response
+                  value: |-
+                    {
+                        "executionId": "uat851645002829615",
+                        "status": "2001",
+                        "message": "SUCCESS",
+                        "error": ""
+                    }
+                example-1:
+                  summary: Successful Response Copy
+                  value: |-
+                    {
+                        "executionId": "uat851645002829615",
+                        "status": "2001",
+                        "message": "SUCCESS",
+                        "error": ""
+                    }
+        '404':
+          description: Not Found
+          headers:
+            Date:
+              schema:
+                type: string
+                example: Wed, 16 Feb 2022 09:16:27 GMT
+            Content-Type:
+              schema:
+                type: string
+                example: application/json;charset=UTF-8
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |-
+                {
+                    "timestamp": "2022-02-16T09:16:27.402+0000",
+                    "status": 404,
+                    "error": "Not Found",
+                    "message": "No message available",
+                    "path": "/api/v1/notifyauto1/uat/retailer/crocs"
+                }
+  /api/v1/notifyauto/uat/sendemailreport/retailer/test-rnp:
+    post:
+      tags:
+        - LocalAndInternal
+      summary: Send Messaging UAT report mail - On Demand - Local
+      description: >-
+        This API is used to email the test report on demand to a recipient
+        mentioned in the post body in the request to trigger the test. If the
+        execution is not complete, the email is not sent. Email of the test
+        report is sent only when the test execution is complete.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                execution_id: '112233'
+      responses:
+        '200':
+          description: OK
+          headers:
+            Date:
+              schema:
+                type: string
+                example: Wed, 16 Feb 2022 12:49:01 GMT
+            Content-Type:
+              schema:
+                type: string
+                example: application/json;charset=UTF-8
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                example-0:
+                  summary: Successful Response
+                  value: |-
+                    {
+                        "executionId": "uat851645002829615",
+                        "status": "2001",
+                        "message": "SUCCESS",
+                        "error": ""
+                    }
+                example-1:
+                  summary: Successful Response Copy
+                  value: |-
+                    {
+                        "executionId": "uat851645002829615",
+                        "status": "2001",
+                        "message": "SUCCESS",
+                        "error": ""
+                    }
+        '404':
+          description: Not Found
+          headers:
+            Date:
+              schema:
+                type: string
+                example: Wed, 16 Feb 2022 09:16:27 GMT
+            Content-Type:
+              schema:
+                type: string
+                example: application/json;charset=UTF-8
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |-
+                {
+                    "timestamp": "2022-02-16T09:16:27.402+0000",
+                    "status": 404,
+                    "error": "Not Found",
+                    "message": "No message available",
+                    "path": "/api/v1/notifyauto1/uat/retailer/crocs"
+                }
+  /api/v1/notifyauto/uat/retailer/messagingtest2:
+    post:
+      tags:
+        - Staging
+      summary: Run Messaging UAT for All Triggers - ST01
+      description: "This endpoint helps trigger the User Acceptance Test for Messaging for all triggers and based on input such as locales and channels, for a given retailer. The response includes an\_`execution_id`\_which can be queried by the get endpoints to know the status of the User Acceptance Tests."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                carrier_moniker: fedex
+                triggers:
+                  - All
+                channel_contacts:
+                  - channel: email
+                    contact: rajesh.kannan@narvar.com
+                    optin_level: ''
+                  - channel: sms
+                    contact: '+919880011322'
+                    optin_level: order
+                  - channel: whatsapp
+                    contact: '+919880011322'
+                    optin_level: customer
+      responses:
+        '200':
+          description: OK
+          headers:
+            Date:
+              schema:
+                type: string
+                example: Wed, 16 Feb 2022 12:49:01 GMT
+            Content-Type:
+              schema:
+                type: string
+                example: application/json;charset=UTF-8
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |-
+                {
+                    "executionId": "uat851645002829615",
+                    "status": "2001",
+                    "message": "SUCCESS",
+                    "error": ""
+                }
+        '404':
+          description: Not Found
+          headers:
+            Date:
+              schema:
+                type: string
+                example: Wed, 16 Feb 2022 09:16:27 GMT
+            Content-Type:
+              schema:
+                type: string
+                example: application/json;charset=UTF-8
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |-
+                {
+                    "timestamp": "2022-02-16T09:16:27.402+0000",
+                    "status": 404,
+                    "error": "Not Found",
+                    "message": "No message available",
+                    "path": "/api/v1/notifyauto1/uat/retailer/crocs"
+                }
+  /api/v1/notifyauto/uat/retailer/wysiwygtest:
+    post:
+      tags:
+        - Prod
+      summary: Run Messaging UAT for Specific Triggers - Prod01
+      description: "This endpoint helps trigger the User Acceptance Test for Messaging based on input such as triggers, locales, channels, for a given retailer (for specific triggers provided). The response includes an\_`execution_id`\_which can be queried by the get endpoints to know the status of the User Acceptance Tests."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                retailer_name: wysiwygtest
+                carrier_moniker: ups
+                triggers:
+                  - shipment_confirmation_standard
+                channels:
+                  - email
+                locales:
+                  - en_US
+                channel_contacts:
+                  - channel: email
+                    contact: rajesh.kannan@narvar.com
+                    optin_level: ''
+                  - channel: sms
+                    contact: '+919880011322'
+                    optin_level: order
+                  - channel: whatsapp
+                    contact: '+919880011322'
+                    optin_level: customer
+      responses:
+        '200':
+          description: OK
+          headers:
+            Date:
+              schema:
+                type: string
+                example: Wed, 16 Feb 2022 12:49:01 GMT
+            Content-Type:
+              schema:
+                type: string
+                example: application/json;charset=UTF-8
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |-
+                {
+                    "executionId": "uat851645002829615",
+                    "status": "2001",
+                    "message": "SUCCESS",
+                    "error": ""
+                }
+        '404':
+          description: Not Found
+          headers:
+            Date:
+              schema:
+                type: string
+                example: Wed, 16 Feb 2022 09:16:27 GMT
+            Content-Type:
+              schema:
+                type: string
+                example: application/json;charset=UTF-8
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |-
+                {
+                    "timestamp": "2022-02-16T09:16:27.402+0000",
+                    "status": 404,
+                    "error": "Not Found",
+                    "message": "No message available",
+                    "path": "/api/v1/notifyauto1/uat/retailer/crocs"
+                }
+  /api/v1/notifyauto/uat/retailer/xxxlutz-at:
+    get:
+      tags:
+        - Prod
+      summary: Get Messaging UAT Execution Result  - Prod01
+      description: >-
+        Using this request, by passing the `execution_id` as the parameter, you
+        can obtain the status of the UAT tests. The response tells us if the
+        test is in progress or completed. The completed tests will provide a
+        very detailed response as which tests succeeded, which tests failed, the
+        reason for failure etc.
+      parameters:
+        - name: execution_id
+          in: query
+          schema:
+            type: string
+          example: uat4471638863638420
+      responses:
+        '200':
+          description: OK
+          headers:
+            Date:
+              schema:
+                type: string
+                example: Wed, 16 Feb 2022 12:49:01 GMT
+            Content-Type:
+              schema:
+                type: string
+                example: application/json;charset=UTF-8
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |-
+                {
+                    "executionId": "uat851645002829615",
+                    "status": "2001",
+                    "message": "SUCCESS",
+                    "error": ""
+                }
+        '404':
+          description: Not Found
+          headers:
+            Date:
+              schema:
+                type: string
+                example: Wed, 16 Feb 2022 09:16:27 GMT
+            Content-Type:
+              schema:
+                type: string
+                example: application/json;charset=UTF-8
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+            Connection:
+              schema:
+                type: string
+                example: keep-alive
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |-
+                {
+                    "timestamp": "2022-02-16T09:16:27.402+0000",
+                    "status": 404,
+                    "error": "Not Found",
+                    "message": "No message available",
+                    "path": "/api/v1/notifyauto1/uat/retailer/crocs"
+                }

@@ -1,119 +1,1298 @@
-openapi: "3.0.0"
-info:
-  version: 1.0.0
-  title: Swagger Petstore
-  license:
-    name: MIT
-  description: |
-    ## Petstore API
-
-    | Syntax | Description |
-    | ----------- | ----------- |
-    | Header | Title |
-    | Paragraph | Text | 
-
-servers:
-  - url: http://petstore.swagger.io/v1
-paths:
-  /pets:
-    get:
-      summary: List all pets
-      operationId: listPets
-      tags:
-        - pets
-      parameters:
-        - name: limit
-          in: query
-          description: How many items to return at one time (max 100)
-          required: false
-          schema:
-            type: integer
-            format: int32
-      responses:
-        '200':
-          description: A paged array of pets
-          headers:
-            x-next:
-              description: A link to the next page of responses
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Pets"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-    post:
-      summary: Create a pet
-      operationId: createPets
-      tags:
-        - pets
-      responses:
-        '201':
-          description: Null response
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  /pets/{petId}:
-    get:
-      summary: Info for a specific pet
-      operationId: showPetById
-      tags:
-        - pets
-      parameters:
-        - name: petId
-          in: path
-          required: true
-          description: The id of the pet to retrieve
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Expected response to a valid request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Pet"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-components:
-  schemas:
-    Pet:
-      type: object
-      required:
-        - id
-        - name
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        tag:
-          type: string
-    Pets:
-      type: array
-      items:
-        $ref: "#/components/schemas/Pet"
-    Error:
-      type: object
-      required:
-        - code
-        - message
-      properties:
-        code:
-          type: integer
-          format: int32
-        message:
-          type: string
+{
+"openapi": "3.0.1",
+"info": {
+"title": "UAT Service",
+"description": "UAT Service provides the endpoints to carry out the user acceptance tests. The user acceptance tests are normally run in one of the following scenarios:\n\n1. When a new Retailer (Customer) is onboarded.\n2. When a new feature or change is added to an existing Retailer.\n3. For onboarding a retailer to the Returns Platform.\n\nIn general these tests are used to confirm if the integration between the Narvar and Retailer is working as expected. In practice these tests are run by the customer facing teams (professional services team, customer support teams and customer success teams). In practice as these tests are run manually and may not cover all the scenarios due to human error. The endpoints provided by the UAT service at the time of this documentation provide UAT capability for two products namely:\n\n1. Returns and\n2. Messaging\n(The support exists for all the three environments - QA01, Staging and Production)\n\n\nTool Integration:\n\nHub: These endpoints are now integrated to hub. The customer facing teams can now trigger the UAT tests for messaging from the hub itself. The same tests can be triggered by the retailer as well in the long run.\n\nRetool: The Retailer Onboarding to the Returns Platform is integrated with the Retool on all the three platforms namely qa01, staging and production. As retool is internal and as tenant creation should be allowed for only the internal customers, this integration exists in place.)\n\n\nReferencese:\n\nRun Book to trigger the messaging UAT tests is available at the link here: https://narvar.atlassian.net/wiki/spaces/TESTENG/pages/1520370104/User+Acceptance+Testing+UAT+for+Messaging+-+Runbook\n\nHigh level Hub integration details can be found here: https://narvar.atlassian.net/wiki/spaces/CG/pages/2089222494/Messaging+retailer+UAT+Backend+changes\n\nReturns UAT API documentation can be found here: https://narvar.atlassian.net/wiki/spaces/TESTENG/pages/2176909389/Returns+UAT+Service+-+API+doc\n\nDocumentation for retool pages for Retailer onboarding to Returns Platform can be found here: https://narvar.atlassian.net/wiki/spaces/TESTENG/pages/2172813471",
+"version": "1.0.0"
+},
+"servers": [
+{
+"url": "http://localhost:8080",
+"description": "Generated server url"
+}
+],
+"paths": {
+"/healthcheck": {
+"get": {
+"tags": [
+"service-controllers"
+],
+"operationId": "getProdHealthCheck",
+"responses": {
+"200": {
+"description": "OK",
+"content": {
+"application/json;charset=UTF-8": {
+"schema": {
+"$ref": "#/components/schemas/APIResponse"
+}
+}
+}
+}
+}
+}
+},
+"/api/v1/returnsuat/status": {
+"get": {
+"tags": [
+"returns-service-controllers"
+],
+"operationId": "getExecutionIdForRetailer",
+"parameters": [
+{
+"name": "retailer_moniker",
+"in": "query",
+"required": true,
+"schema": {
+"type": "string"
+}
+}
+],
+"responses": {
+"200": {
+"description": "OK",
+"content": {
+"application/json;charset=UTF-8": {
+"schema": {
+"$ref": "#/components/schemas/UATExecutionIdStatusResponse"
+}
+}
+}
+}
+}
+}
+},
+"/api/v1/returnsuat/rules": {
+"get": {
+"tags": [
+"returns-service-controllers"
+],
+"operationId": "getReturnRulesConfigured",
+"parameters": [
+{
+"name": "retailer",
+"in": "query",
+"required": true,
+"schema": {
+"type": "string"
+}
+}
+],
+"responses": {
+"200": {
+"description": "OK",
+"content": {
+"application/json;charset=UTF-8": {
+"schema": {
+"$ref": "#/components/schemas/ReturnsRulesResponse"
+}
+}
+}
+}
+}
+}
+},
+"/api/v1/returnsuat/retailer/{retailer}": {
+"post": {
+"tags": [
+"returns-service-controllers"
+],
+"summary": "Post Returns UAT run request",
+"description": "This endpoint helps trigger the User Acceptance Test for Messaging based on input such as triggers, locales, channels, for a given retailer (for specific triggers provided). The response includes an execution_id which can be queried by the get endpoints to know the status of the User Acceptance Tests.",
+"operationId": "executeReturnsUAT",
+"parameters": [
+{
+"name": "retailer",
+"in": "path",
+"required": true,
+"schema": {
+"type": "string"
+}
+}
+],
+"requestBody": {
+"content": {
+"application/json": {
+"schema": {
+"$ref": "#/components/schemas/ReturnsUATRequest"
+}
+}
+},
+"required": true
+},
+"responses": {
+"200": {
+"description": "successful",
+"content": {
+"application/json;charset=UTF-8": {
+"schema": {
+"$ref": "#/components/schemas/ReturnsUATPostResponse"
+}
+}
+}
+},
+"404": {
+"description": "Failure",
+"content": {
+"application/json;charset=UTF-8": {
+"schema": {
+"$ref": "#/components/schemas/ReturnsUATPostResponse"
+}
+}
+}
+}
+}
+}
+},
+"/api/v1/returnsuat/retailer/{retailer_moniker}": {
+"get": {
+"tags": [
+"returns-service-controllers"
+],
+"summary": "Get Returns UAT Execution Result",
+"description": "Using this request, by passing the execution_id as the parameter, you can obtain the status of the UAT tests. The response tells us if the test is in progress or completed. The completed tests will provide a very detailed response as which tests succeeded, which tests failed, the reason for failure etc.",
+"operationId": "executeReturnsUAT_1",
+"parameters": [
+{
+"name": "retailer_moniker",
+"in": "path",
+"required": true,
+"schema": {
+"type": "string"
+}
+},
+{
+"name": "execution_id",
+"in": "query",
+"required": true,
+"schema": {
+"type": "string"
+}
+},
+{
+"name": "failed_tests",
+"in": "query",
+"required": false,
+"schema": {
+"type": "boolean"
+}
+}
+],
+"responses": {
+"200": {
+"description": "successful",
+"content": {
+"application/json;charset=UTF-8": {
+"schema": {
+"$ref": "#/components/schemas/ReturnsUATGetResponse"
+}
+}
+}
+},
+"404": {
+"description": "Failure",
+"content": {
+"application/json;charset=UTF-8": {
+"schema": {
+"$ref": "#/components/schemas/ReturnsUATGetResponse"
+}
+}
+}
+}
+}
+}
+},
+"/api/v1/returnsuat/locales": {
+"get": {
+"tags": [
+"returns-service-controllers"
+],
+"operationId": "getLocalesConfiguredForReturnTriggers",
+"parameters": [
+{
+"name": "retailer",
+"in": "query",
+"required": true,
+"schema": {
+"type": "string"
+}
+}
+],
+"responses": {
+"200": {
+"description": "OK",
+"content": {
+"application/json;charset=UTF-8": {
+"schema": {
+"$ref": "#/components/schemas/ReturnsLocaleResponse"
+}
+}
+}
+}
+}
+}
+},
+"/api/v1/returns/promote/retailer/{configtype}": {
+"post": {
+"tags": [
+"returns-service-controllers"
+],
+"operationId": "doRetailerConfigPromotionForReturns",
+"parameters": [
+{
+"name": "configtype",
+"in": "path",
+"required": true,
+"schema": {
+"type": "string"
+}
+}
+],
+"requestBody": {
+"content": {
+"application/json": {
+"schema": {
+"$ref": "#/components/schemas/ReturnsRetailerConfigPromotionRequest"
+}
+}
+},
+"required": true
+},
+"responses": {
+"200": {
+"description": "OK",
+"content": {
+"application/json;charset=UTF-8": {
+"schema": {
+"$ref": "#/components/schemas/ReturnsRetailerConfigPromotionResponse"
+}
+}
+}
+}
+}
+}
+},
+"/api/v1/returns/onboardretailer": {
+"post": {
+"tags": [
+"returns-service-controllers"
+],
+"operationId": "doRetailerOnboardingForReturns",
+"requestBody": {
+"content": {
+"application/json": {
+"schema": {
+"$ref": "#/components/schemas/ReturnsOnboardingRequest"
+}
+}
+},
+"required": true
+},
+"responses": {
+"200": {
+"description": "OK",
+"content": {
+"application/json;charset=UTF-8": {
+"schema": {
+"$ref": "#/components/schemas/ReturnsOnboardingResponse"
+}
+}
+}
+}
+}
+}
+},
+"/api/v1/returns/addretailer": {
+"post": {
+"tags": [
+"returns-service-controllers"
+],
+"operationId": "createRetailer",
+"requestBody": {
+"content": {
+"application/json": {
+"schema": {
+"$ref": "#/components/schemas/ReturnsOnboardingRequest"
+}
+}
+},
+"required": true
+},
+"responses": {
+"200": {
+"description": "OK",
+"content": {
+"application/json;charset=UTF-8": {
+"schema": {
+"$ref": "#/components/schemas/ReturnsOnboardingResponse"
+}
+}
+}
+}
+}
+}
+},
+"/api/v1/notifyauto/uat/sendemailreport/retailer/{retailer_moniker}": {
+"post": {
+"tags": [
+"service-controllers"
+],
+"operationId": "sendEmailReportForMessagingUAT",
+"parameters": [
+{
+"name": "retailer_moniker",
+"in": "path",
+"required": true,
+"schema": {
+"type": "string"
+}
+}
+],
+"requestBody": {
+"content": {
+"application/json": {
+"schema": {
+"$ref": "#/components/schemas/SendUATReportRequest"
+}
+}
+},
+"required": true
+},
+"responses": {
+"200": {
+"description": "OK",
+"content": {
+"application/json;charset=UTF-8": {
+"schema": {
+"$ref": "#/components/schemas/UATReportResponse"
+}
+}
+}
+}
+}
+}
+},
+"/api/v1/notifyauto/uat/retailer/{retailer_moniker}": {
+"get": {
+"tags": [
+"service-controllers"
+],
+"operationId": "getUATExecutionResult",
+"parameters": [
+{
+"name": "retailer_moniker",
+"in": "path",
+"required": true,
+"schema": {
+"type": "string"
+}
+},
+{
+"name": "execution_id",
+"in": "query",
+"required": true,
+"schema": {
+"type": "string"
+}
+}
+],
+"responses": {
+"200": {
+"description": "OK",
+"content": {
+"application/json;charset=UTF-8": {
+"schema": {
+"$ref": "#/components/schemas/UATGetAPIResponse"
+}
+}
+}
+}
+}
+},
+"post": {
+"tags": [
+"service-controllers"
+],
+"operationId": "executeMessagingUAT",
+"parameters": [
+{
+"name": "retailer_moniker",
+"in": "path",
+"required": true,
+"schema": {
+"type": "string"
+}
+}
+],
+"requestBody": {
+"content": {
+"application/json": {
+"schema": {
+"$ref": "#/components/schemas/MessagingUATRequest"
+}
+}
+},
+"required": true
+},
+"responses": {
+"200": {
+"description": "OK",
+"content": {
+"application/json;charset=UTF-8": {
+"schema": {
+"$ref": "#/components/schemas/UATPostAPIResponse"
+}
+}
+}
+}
+}
+}
+},
+"/api/v1/notifyauto/uat/healthcheck": {
+"post": {
+"tags": [
+"service-controllers"
+],
+"operationId": "doMessagingHealthCheck",
+"requestBody": {
+"content": {
+"application/json": {
+"schema": {
+"$ref": "#/components/schemas/UATHealthCheckRequest"
+}
+}
+},
+"required": true
+},
+"responses": {
+"200": {
+"description": "OK",
+"content": {
+"application/json;charset=UTF-8": {
+"schema": {
+"$ref": "#/components/schemas/APIResponse"
+}
+}
+}
+}
+}
+}
+},
+"/api/v1/notifyauto/prodhealthcheck": {
+"get": {
+"tags": [
+"service-controllers"
+],
+"operationId": "getProdHealthCheck_1",
+"parameters": [
+{
+"name": "execution_id",
+"in": "query",
+"required": true,
+"schema": {
+"type": "string"
+}
+}
+],
+"responses": {
+"200": {
+"description": "OK",
+"content": {
+"application/json;charset=UTF-8": {
+"schema": {
+"$ref": "#/components/schemas/ProdHealthCheckGetAPIResponse"
+}
+}
+}
+}
+}
+},
+"post": {
+"tags": [
+"service-controllers"
+],
+"operationId": "doProdHealthCheck",
+"requestBody": {
+"content": {
+"application/json": {
+"schema": {
+"$ref": "#/components/schemas/MessagingHealthCheckRequest"
+}
+}
+},
+"required": true
+},
+"responses": {
+"200": {
+"description": "OK",
+"content": {
+"application/json;charset=UTF-8": {
+"schema": {
+"$ref": "#/components/schemas/ProdHealthCheckPostAPIResponse"
+}
+}
+}
+}
+}
+}
+}
+},
+"components": {
+"schemas": {
+"APIResponse": {
+"type": "object",
+"properties": {
+"status": {
+"type": "string"
+},
+"message": {
+"type": "string"
+},
+"error": {
+"type": "string"
+},
+"responseObject": {
+"type": "object"
+}
+}
+},
+"UATExecutionIdStatusResponse": {
+"type": "object",
+"properties": {
+"execution_id": {
+"type": "string"
+},
+"status": {
+"type": "string"
+}
+}
+},
+"ReturnsRulesResponse": {
+"type": "object",
+"properties": {
+"status": {
+"type": "string"
+},
+"message": {
+"type": "string"
+},
+"error": {
+"type": "string"
+},
+"eligibility_rules": {
+"type": "array",
+"items": {
+"type": "string"
+}
+}
+}
+},
+"ReturnsUATRequest": {
+"required": [
+"eligibility_rules",
+"email",
+"locales",
+"retailer_name"
+],
+"type": "object",
+"properties": {
+"retailer_name": {
+"type": "string",
+"description": "Retailer Company Name",
+"example": "rkreturns"
+},
+"eligibility_rules": {
+"type": "array",
+"description": "One or more eligibility rules name or [\"All\"]",
+"example": [
+"All"
+],
+"items": {
+"type": "string",
+"description": "One or more eligibility rules name or [\"All\"]",
+"example": "[\"All\"]"
+}
+},
+"locales": {
+"type": "array",
+"description": "One or more locales",
+"example": [
+"en_US"
+],
+"items": {
+"type": "string",
+"description": "One or more locales",
+"example": "[\"en_US\"]"
+}
+},
+"email": {
+"type": "string",
+"description": "Email id to send returns notifications",
+"example": "firstname.lastname@narvar.com"
+},
+"triggered_by": {
+"type": "string"
+},
+"run_negative_test": {
+"type": "boolean"
+},
+"return_triggers": {
+"type": "array",
+"items": {
+"type": "string"
+}
+}
+}
+},
+"ReturnsUATPostResponse": {
+"type": "object",
+"properties": {
+"executionId": {
+"type": "string"
+},
+"status": {
+"type": "string"
+},
+"message": {
+"type": "string"
+},
+"error": {
+"type": "string"
+}
+}
+},
+"ReturnsUATGetResponse": {
+"type": "object",
+"properties": {
+"status": {
+"type": "string"
+},
+"message": {
+"type": "string"
+},
+"error": {
+"type": "string"
+},
+"returnsUATTestResponse": {
+"$ref": "#/components/schemas/ReturnsUATTestResponse"
+}
+}
+},
+"ReturnsUATTestResponse": {
+"type": "object",
+"properties": {
+"execution_id": {
+"type": "string"
+},
+"retailer_moniker": {
+"type": "string"
+},
+"total_test_cases_executed": {
+"type": "integer",
+"format": "int32"
+},
+"passed_test_cases": {
+"type": "integer",
+"format": "int32"
+},
+"failed_test_cases": {
+"type": "integer",
+"format": "int32"
+},
+"pass_percentage": {
+"type": "number",
+"format": "float"
+},
+"execution_time": {
+"type": "string"
+},
+"triggered_date": {
+"type": "string",
+"format": "date-time"
+},
+"results": {
+"type": "array",
+"items": {
+"$ref": "#/components/schemas/ReturnsUATTestResult"
+}
+}
+}
+},
+"ReturnsUATTestResult": {
+"type": "object",
+"properties": {
+"test_flow": {
+"type": "string"
+},
+"rule_tested_for": {
+"type": "string"
+},
+"rule_hit_by_the_test": {
+"type": "string"
+},
+"return_eligibility": {
+"type": "string"
+},
+"status": {
+"type": "string"
+},
+"time_taken": {
+"type": "string"
+},
+"order_number": {
+"type": "string"
+},
+"tracking_number": {
+"type": "string"
+},
+"locale": {
+"type": "string"
+},
+"notification_triggered": {
+"type": "object",
+"additionalProperties": {
+"type": "string"
+}
+},
+"validation_details": {
+"$ref": "#/components/schemas/ValidationDetails"
+}
+}
+},
+"ValidationDetails": {
+"type": "object",
+"properties": {
+"return_method": {
+"type": "string"
+},
+"return_submission": {
+"type": "string"
+},
+"return_cancellation": {
+"type": "string"
+},
+"return_fees_validation": {
+"type": "string"
+},
+"refund_validation": {
+"type": "string"
+},
+"message": {
+"type": "string"
+}
+}
+},
+"ReturnsLocaleResponse": {
+"type": "object",
+"properties": {
+"status": {
+"type": "string"
+},
+"message": {
+"type": "string"
+},
+"error": {
+"type": "string"
+},
+"locales": {
+"uniqueItems": true,
+"type": "array",
+"items": {
+"type": "string"
+}
+}
+}
+},
+"ReturnsRetailerConfigPromotionRequest": {
+"type": "object",
+"properties": {
+"retailer_name": {
+"type": "string"
+},
+"uri_moniker": {
+"type": "string"
+},
+"source_env": {
+"type": "string"
+},
+"destination_env": {
+"type": "string"
+}
+}
+},
+"ReturnsRetailerConfigPromotionResponse": {
+"type": "object",
+"properties": {
+"statusCode": {
+"type": "string"
+},
+"message": {
+"type": "string"
+},
+"error": {
+"type": "string"
+},
+"status": {
+"type": "string"
+},
+"promotionId": {
+"type": "string"
+},
+"configType": {
+"type": "string"
+},
+"retailerName": {
+"type": "string"
+},
+"uriMoniker": {
+"type": "string"
+},
+"sourceEnv": {
+"type": "string"
+},
+"destinationEnv": {
+"type": "string"
+}
+}
+},
+"Branding": {
+"type": "object",
+"properties": {
+"brand_secondary": {
+"type": "string"
+},
+"body_bg": {
+"type": "string"
+},
+"primary_font_url": {
+"type": "string"
+},
+"secondary_font_url": {
+"type": "string"
+},
+"base_font_url": {
+"type": "string"
+},
+"brand_primary": {
+"type": "string"
+},
+"header_text_color": {
+"type": "string"
+},
+"brand_call_to_action": {
+"type": "string"
+},
+"brand_base": {
+"type": "string"
+},
+"link_hover_color": {
+"type": "string"
+},
+"border_color": {
+"type": "string"
+},
+"font_family_primary": {
+"type": "string"
+},
+"font_family_base": {
+"type": "string"
+},
+"font_family_primary_style": {
+"type": "string"
+},
+"link_color": {
+"type": "string"
+},
+"panel_bg": {
+"type": "string"
+},
+"text_color": {
+"type": "string"
+},
+"font_family_secondary": {
+"type": "string"
+},
+"header_bg": {
+"type": "string"
+}
+}
+},
+"Menu": {
+"type": "object",
+"properties": {
+"href": {
+"type": "string"
+},
+"label": {
+"type": "string"
+}
+}
+},
+"ReturnsOnboardingRequest": {
+"required": [
+"apis",
+"carriers",
+"locales",
+"products",
+"retailer_name",
+"type",
+"uri_moniker"
+],
+"type": "object",
+"properties": {
+"retailer_name": {
+"type": "string"
+},
+"uri_moniker": {
+"type": "string"
+},
+"apis": {
+"type": "array",
+"items": {
+"type": "string"
+}
+},
+"locales": {
+"type": "array",
+"items": {
+"type": "string"
+}
+},
+"carriers": {
+"type": "array",
+"items": {
+"type": "string"
+}
+},
+"products": {
+"type": "array",
+"items": {
+"type": "string"
+}
+},
+"type": {
+"type": "string"
+},
+"branding": {
+"$ref": "#/components/schemas/Branding"
+},
+"menu": {
+"type": "array",
+"items": {
+"$ref": "#/components/schemas/Menu"
+}
+}
+}
+},
+"ReturnsOnboardingResponse": {
+"type": "object",
+"properties": {
+"status": {
+"type": "string"
+},
+"message": {
+"type": "string"
+},
+"error": {
+"type": "string"
+},
+"onboardingId": {
+"type": "string"
+}
+}
+},
+"SendUATReportRequest": {
+"required": [
+"execution_id"
+],
+"type": "object",
+"properties": {
+"execution_id": {
+"type": "string"
+}
+}
+},
+"UATReportResponse": {
+"type": "object",
+"properties": {
+"status": {
+"type": "string"
+},
+"message": {
+"type": "string"
+},
+"error": {
+"type": "string"
+}
+}
+},
+"ChannelContact": {
+"type": "object",
+"properties": {
+"channel": {
+"type": "string"
+},
+"contact": {
+"type": "string"
+},
+"optin_level": {
+"type": "string"
+}
+}
+},
+"MessagingUATRequest": {
+"required": [
+"carrier_moniker",
+"channel_contacts",
+"channels",
+"locales",
+"retailer_name",
+"triggers"
+],
+"type": "object",
+"properties": {
+"retailer_name": {
+"type": "string"
+},
+"carrier_moniker": {
+"type": "string"
+},
+"triggers": {
+"type": "array",
+"items": {
+"type": "string"
+}
+},
+"locales": {
+"type": "array",
+"items": {
+"type": "string"
+}
+},
+"channels": {
+"type": "array",
+"items": {
+"type": "string"
+}
+},
+"channel_contacts": {
+"type": "array",
+"items": {
+"$ref": "#/components/schemas/ChannelContact"
+}
+}
+}
+},
+"UATPostAPIResponse": {
+"type": "object",
+"properties": {
+"executionId": {
+"type": "string"
+},
+"status": {
+"type": "string"
+},
+"message": {
+"type": "string"
+},
+"error": {
+"type": "string"
+}
+}
+},
+"UATGetAPIResponse": {
+"type": "object",
+"properties": {
+"status": {
+"type": "string"
+},
+"message": {
+"type": "string"
+},
+"error": {
+"type": "string"
+},
+"uat_test_result": {
+"$ref": "#/components/schemas/UATTestResponse"
+}
+}
+},
+"UATTestResponse": {
+"type": "object",
+"properties": {
+"execution_id": {
+"type": "string"
+},
+"retailer_moniker": {
+"type": "string"
+},
+"carrier_moniker": {
+"type": "string"
+},
+"results": {
+"type": "array",
+"items": {
+"$ref": "#/components/schemas/UATTestResult"
+}
+}
+}
+},
+"UATTestResult": {
+"type": "object",
+"properties": {
+"testcase": {
+"type": "string"
+},
+"status": {
+"type": "string"
+},
+"trigger": {
+"type": "string"
+},
+"channel": {
+"type": "string"
+},
+"locale": {
+"type": "string"
+},
+"order_number": {
+"type": "string"
+},
+"tracking_number": {
+"type": "string"
+},
+"notification_text": {
+"type": "string"
+},
+"message": {
+"type": "string"
+},
+"test_execution_time": {
+"type": "string"
+}
+}
+},
+"UATHealthCheckRequest": {
+"type": "object",
+"properties": {
+"retailer_moniker": {
+"type": "string"
+},
+"order_number": {
+"type": "string"
+},
+"carrier_moniker": {
+"type": "string"
+},
+"tracking_number": {
+"type": "string"
+}
+}
+},
+"MessagingHealthCheckRequest": {
+"type": "object",
+"properties": {
+"retailer_monikers": {
+"type": "array",
+"items": {
+"type": "string"
+}
+},
+"triggers": {
+"type": "array",
+"items": {
+"type": "string"
+}
+},
+"carrier_monikers": {
+"type": "array",
+"items": {
+"type": "string"
+}
+},
+"locales": {
+"type": "array",
+"items": {
+"type": "string"
+}
+},
+"order_types": {
+"type": "array",
+"items": {
+"type": "string"
+}
+},
+"feature": {
+"type": "string"
+},
+"channel": {
+"type": "string"
+}
+}
+},
+"ProdHealthCheckPostAPIResponse": {
+"type": "object",
+"properties": {
+"status": {
+"type": "string"
+},
+"message": {
+"type": "string"
+},
+"error": {
+"type": "string"
+},
+"executionId": {
+"type": "string"
+}
+}
+},
+"ProdHealthCheckGetAPIResponse": {
+"type": "object",
+"properties": {
+"status": {
+"type": "string"
+},
+"message": {
+"type": "string"
+},
+"error": {
+"type": "string"
+},
+"execution_id": {
+"type": "string"
+},
+"testcollab_execution_url": {
+"type": "string"
+},
+"prodSanityTestResultResponse": {
+"type": "array",
+"items": {
+"$ref": "#/components/schemas/ProdSanityTestResultResponse"
+}
+}
+}
+},
+"ProdSanityTestResultResponse": {
+"type": "object",
+"properties": {
+"testCaseId": {
+"type": "string"
+},
+"testCaseDescription": {
+"type": "string"
+},
+"testStatus": {
+"type": "string"
+},
+"testCaseSuccessOrFailureMessage": {
+"type": "string"
+},
+"testCaseExecutionTime": {
+"type": "string"
+}
+}
+}
+}
+}
+}
